@@ -13,7 +13,7 @@ public class BattleStatistics {
     public static void main(String[] args) {
         // Constants
         final Random rng = new Random();
-        final int BATTLE_COUNT = 10000;
+        final int BATTLE_COUNT = 69420;
 
         // Initialize tables
         StatisticTable<FighterData, Fighter> fighterTable = new StatisticTable<>("Fighters");
