@@ -7,28 +7,32 @@ import lemniscate.engine.data.StatusData;
  * (except for StatModifier which contains a bunch of stat permutations) **/
 public class Statuses {
     // BUFFS
-    public static final StatusData BARRIER = new Barrier();
-    public static final StatusData REGENERATION = new Regeneration();
+    public static final StatusData
+            BARRIER = new Barrier(),
+            REGENERATION = new Regeneration(),
 
     // DEBUFFS
-    public static final StatusData ASLEEP = new Asleep();
-    public static final StatusData BURN = new Burn();
-    public static final StatusData STUN = new Stun();
-    public static final StatusData UNHEALABLE = new Unhealable();
+            ASLEEP = new Asleep(),
+            BURN = new Burn(),
+            DAMAGE_BLESSING = new DamageBlessing(),
+            IMMUNITY = new Immunity(),
+            SAFEGUARD = new Safeguard(),
+            STUN = new Stun(),
+            UNHEALABLE = new Unhealable(),
 
     // STAT MODIFIERS
-    public static final StatusData INCREASED_ATTACK = new StatModifier(StatModifier.Stat.ATTACK, StatModifier.Magnitude.INCREASED);
-    public static final StatusData GREATLY_INCREASED_ATTACK = new StatModifier(StatModifier.Stat.ATTACK, StatModifier.Magnitude.GREATLY_INCREASED);
-    public static final StatusData DECREASED_ATTACK = new StatModifier(StatModifier.Stat.ATTACK, StatModifier.Magnitude.DECREASED);
-    public static final StatusData GREATLY_DECREASED_ATTACK = new StatModifier(StatModifier.Stat.ATTACK, StatModifier.Magnitude.GREATLY_DECREASED);
+            INCREASED_ATTACK = new StatModifier(StatModifier.Stat.ATTACK, StatModifier.Magnitude.INCREASED),
+            GREATLY_INCREASED_ATTACK = new StatModifier(StatModifier.Stat.ATTACK, StatModifier.Magnitude.GREATLY_INCREASED),
+            DECREASED_ATTACK = new StatModifier(StatModifier.Stat.ATTACK, StatModifier.Magnitude.DECREASED),
+            GREATLY_DECREASED_ATTACK = new StatModifier(StatModifier.Stat.ATTACK, StatModifier.Magnitude.GREATLY_DECREASED),
 
-    public static final StatusData INCREASED_DEFENSE = new StatModifier(StatModifier.Stat.DEFENSE, StatModifier.Magnitude.INCREASED);
-    public static final StatusData GREATLY_INCREASED_DEFENSE = new StatModifier(StatModifier.Stat.DEFENSE, StatModifier.Magnitude.GREATLY_INCREASED);
-    public static final StatusData DECREASED_DEFENSE = new StatModifier(StatModifier.Stat.DEFENSE, StatModifier.Magnitude.DECREASED);
-    public static final StatusData GREATLY_DECREASED_DEFENSE = new StatModifier(StatModifier.Stat.DEFENSE, StatModifier.Magnitude.GREATLY_DECREASED);
+            INCREASED_DEFENSE = new StatModifier(StatModifier.Stat.DEFENSE, StatModifier.Magnitude.INCREASED),
+            GREATLY_INCREASED_DEFENSE = new StatModifier(StatModifier.Stat.DEFENSE, StatModifier.Magnitude.GREATLY_INCREASED),
+            DECREASED_DEFENSE = new StatModifier(StatModifier.Stat.DEFENSE, StatModifier.Magnitude.DECREASED),
+            GREATLY_DECREASED_DEFENSE = new StatModifier(StatModifier.Stat.DEFENSE, StatModifier.Magnitude.GREATLY_DECREASED),
 
-    public static final StatusData INCREASED_SPEED = new StatModifier(StatModifier.Stat.SPEED, StatModifier.Magnitude.INCREASED);
-    public static final StatusData GREATLY_INCREASED_SPEED = new StatModifier(StatModifier.Stat.SPEED, StatModifier.Magnitude.GREATLY_INCREASED);
-    public static final StatusData DECREASED_SPEED = new StatModifier(StatModifier.Stat.SPEED, StatModifier.Magnitude.DECREASED);
-    public static final StatusData GREATLY_DECREASED_SPEED = new StatModifier(StatModifier.Stat.SPEED, StatModifier.Magnitude.GREATLY_DECREASED);
+            INCREASED_SPEED = new StatModifier(StatModifier.Stat.SPEED, StatModifier.Magnitude.INCREASED),
+            GREATLY_INCREASED_SPEED = new StatModifier(StatModifier.Stat.SPEED, StatModifier.Magnitude.GREATLY_INCREASED),
+            DECREASED_SPEED = new StatModifier(StatModifier.Stat.SPEED, StatModifier.Magnitude.DECREASED),
+            GREATLY_DECREASED_SPEED = new StatModifier(StatModifier.Stat.SPEED, StatModifier.Magnitude.GREATLY_DECREASED);
 }

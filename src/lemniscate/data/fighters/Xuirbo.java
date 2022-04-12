@@ -20,7 +20,7 @@ public class Xuirbo extends FighterData {
                 4,
                 ElementalType.THUNDER,
                 FighterClass.ROGUE,
-                2500, 500, 500, 500,
+                3280, 780, 425, 650,
                 "A businessman in the form of a small spherical knight.",
                 new SkillOne(), new SkillTwo(), new SkillThree()
         );
@@ -29,16 +29,16 @@ public class Xuirbo extends FighterData {
     // -------- PARAMS
     @Override public void initializeParams(SkillParams params, int[] levels) {
         // -- S1
-        params.put("decrease", 0.3);
+        params.put("decrease", 0.25);
         // -- S2
-        params.put("hpLoseAmt", 0.1);
+        params.put("hpLoseAmt", 0.075);
         params.put("burnDur", 1);
         params.put("buffDur", 2);
         params.put("leBuffTurns", 1);
         // -- S3
         params.put("spdDmg", 0.4);
-        params.put("hpHpLoseAmt", 0.08);
-        params.put("hpDmgLoseAmt", 0.16);
+        params.put("hpHpLoseAmt", 0.05);
+        params.put("hpDmgLoseAmt", 0.10);
         params.put("stunChance", 0.6);
         params.put("stunDur", 1);
     }
@@ -64,7 +64,7 @@ public class Xuirbo extends FighterData {
         @Override public void use(Fighter user) {
             user.dealDamage().onHit((target) -> {
                 if (target.hasStatus(Statuses.ASLEEP, Statuses.STUN)) {
-                    target.decreaseReadiness("decrease");
+                    target.decreaseReadiness(user.getDouble("decrease"));
                 }
             });
         }
@@ -84,7 +84,7 @@ public class Xuirbo extends FighterData {
         }
         @Override public String description(Fighter user) {
             return String.format(
-                    "Lose HP proportional to max HP and become burned for %s. Greatly increase Attack and Speed for %s.",
+                    "Lose HP proportional to max HP and become burned for %s. Greatly increase Speed and Critical Damage for %s.",
                     user.turnCount("burnDur"), user.turnCount("buffDur")
             );
         }
@@ -100,8 +100,8 @@ public class Xuirbo extends FighterData {
             user.loseHP(proportion(user.getMaxHp(), user.getDouble("hpLoseAmt")));
             user.inflictStatus(Statuses.BURN, user.getInt("burnDur") + user.valIfLeBoosted("leBuffTurns"));
 
-            user.gainStatus(Statuses.GREATLY_INCREASED_ATTACK, user.getInt("buffDur") + user.valIfLeBoosted("leBuffTurns"));
             user.gainStatus(Statuses.GREATLY_INCREASED_SPEED, user.getInt("buffDur") + user.valIfLeBoosted("leBuffTurns"));
+            user.gainStatus(Statuses.GREATLY_INCREASED_ATTACK, user.getInt("buffDur") + user.valIfLeBoosted("leBuffTurns"));
         }
     }
 

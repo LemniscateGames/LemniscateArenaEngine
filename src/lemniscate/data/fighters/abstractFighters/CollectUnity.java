@@ -19,7 +19,7 @@ public abstract class CollectUnity extends FighterData {
                 3,
                 ElementalType.FLAME,
                 FighterClass.WARRIOR,
-                2500, 500, 500, 500,
+                4000, 500, 500, 500,
                 String.format(
                         "A traveller of multiverses who finds %s pitted against strong fighters from across multiple universes.",
                         isCollect ? "himself" : "herself"

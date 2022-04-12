@@ -14,11 +14,11 @@ public class AmbulanceGuy extends FighterData {
     public AmbulanceGuy() {
         super(
                 "ambulanceguy",
-                "AmbulanceGuy",
+                "Ambulance Guy",
                 4,
                 ElementalType.WATER,
                 FighterClass.RANGER,
-                2500, 500, 500, 500,
+                4275, 420, 550, 560,
                 "",
                 new SkillOne(), new SkillTwo(), new SkillThree()
         );
@@ -27,13 +27,15 @@ public class AmbulanceGuy extends FighterData {
     // -------- PARAMS
     @Override public void initializeParams(SkillParams params, int[] levels) {
         // -- S1
-        params.put("dmgHpLose", 0.25);
+        params.put("dmgHpLose", 0.125);
         params.put("dur", 2);
         params.put("hpStrength", 0.15);
         // -- S2
-
+        params.put("dbDur", 3);
+        params.put("hpThreshold", 0.5);
+        params.put("buffDur", 2);
         // -- S3
-
+        params.put("dur3", 1);
     }
 
     // ================================================================
@@ -43,12 +45,14 @@ public class AmbulanceGuy extends FighterData {
             super(
                     "Ambulance Ram",
                     TargetType.ONE_ENEMY,
+                    1.25,
+                    0,
                     1
             );
         }
 
         @Override public String description(Fighter user) {
-            return "Ram the opponent with an ambulance, before losing HP proportional to damage dealt.";
+            return "Ram the opponent with an ambulance, losing HP proportional to damage dealt.";
         }
 
         @Override
@@ -66,7 +70,7 @@ public class AmbulanceGuy extends FighterData {
             user.ifLeBoosted(() -> {
                 user.allies().stream().max(Fighter.hpSort).ifPresent(ally -> {
                     user.inflictStatus(ally, Statuses.REGENERATION, user.getInt("dur"));
-                    user.inflictStatus(ally, Statuses.BARRIER, user.getInt("dur"),
+                    user.inflictStatus(ally, Statuses.BARRIER, "dur",
                             user.proportion(user.getMaxHp(), "hpStrength"));
                 });
             });
@@ -78,22 +82,28 @@ public class AmbulanceGuy extends FighterData {
     public static class SkillTwo extends SkillData {
         public SkillTwo() {
             super(
-                    "",
-                    TargetType.ONE_ENEMY,
-                    1,
+                    "Healing Gun",
+                    TargetType.ONE_ALLY,
+                    0.15,
                     4
             );
         }
 
         @Override public String description(Fighter user) {
             return String.format(
-                    "",
-                    user
+                    "Shoot an ally with the Healing Gun, dealing damage proportional to their max HP and granting Damage Blessing for %s. If resulting HP is below %s, increase Attack and safeguard for %s.",
+                    user.turnCount("dbDur"), user.percent("hpThreshold"), user.percent("buffDur")
             );
         }
 
         @Override public void use(Fighter user) {
-
+            user.dealDamage(proportion(user.getTarget().getMaxHp(), power)).onHit(ally -> {
+                user.inflictStatus(ally, Statuses.DAMAGE_BLESSING, "dbDur");
+                if (ally.hpPercent() < user.getDouble("hpThreshold")){
+                    user.inflictStatus(ally, Statuses.INCREASED_ATTACK, "buffDur");
+                    user.inflictStatus(ally, Statuses.SAFEGUARD, "buffDur");
+                }
+            });
         }
     }
 
@@ -102,30 +112,25 @@ public class AmbulanceGuy extends FighterData {
     public static class SkillThree extends SkillData {
         public SkillThree() {
             super(
-                    "",
+                    "Power of the Gods",
                     TargetType.ONE_ENEMY,
                     0,
-                    5,
-                    1
+                    6
             );
         }
 
         @Override public String description(Fighter user) {
             return String.format(
-                    "",
-                    user
-            );
-        }
-
-        @Override public String leDescription(Fighter user) {
-            return String.format(
-                    "",
-                    user
+                    "Harnessing the power of the gods above, grant all allies immunity and safeguard for %s.",
+                    user.turnCount("dur3")
             );
         }
 
         @Override public void use(Fighter user) {
-
+            user.forEachAlly(ally -> {
+                user.inflictStatus(ally, Statuses.IMMUNITY, "dur3");
+                user.inflictStatus(ally, Statuses.SAFEGUARD, "dur3");
+            });
         }
     }
 }

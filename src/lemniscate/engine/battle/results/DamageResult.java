@@ -4,8 +4,9 @@ import lemniscate.engine.battle.Fighter;
 
 import java.util.function.Consumer;
 
-/** An instance of a fighter taking damage. **/
-public class DamageResult extends Result {
+/** An instance of a fighter taking damage.
+ * Broadcast on the attacker, unlike AttackAction which is broadcast on the target. **/
+public class DamageResult extends BattleResult {
     /** The attacker dealing the damage. **/
     public final Fighter attacker;
     /** The receiver of this damage. **/

@@ -32,8 +32,6 @@ public class Barrier extends StatusData {
                 barrier.setValue(barrier.getValue() - battleAction.getDamage());
                 battleAction.setDamage(0);
             }
-
-            return battleAction;
         });
 
         addEffect(Trigger.TURN_END, this::tickDuration);

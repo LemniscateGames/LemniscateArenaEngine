@@ -20,7 +20,7 @@ public class Romra extends FighterData {
                 3,
                 ElementalType.WIND,
                 FighterClass.KNIGHT,
-                2500, 500, 500, 500,
+                4800, 425, 750, 325,
                 "A newly certified knight in the Territory of Static Army who wishes to one day join the Elemental Offense Squad.",
                 new BladeArm(), new HerosStrike(), new ShieldOfStatic()
         );
@@ -31,16 +31,14 @@ public class Romra extends FighterData {
         // -- S1
         params.put("chance", 0.35);
         params.put("dur", 2);
-        params.put("defDmgBoost", 0.4);
+        params.put("defDmgBoost", 0.35);
         // -- S2
         params.put("dispelCount", 1);
-        params.put("attackDecreaseDur", 3);
-        params.put("unhealableDur", 2);
-        params.put("hpDmgBoost", 0.15);
+        params.put("debuffDur", 2);
+        params.put("hpDmgBoost", 0.09);
         // -- S3
-        params.put("statBuffDur", 1);
-        params.put("barrierDur", 2);
-        params.put("extendDur", 1);
+        params.put("statDur", 1);
+        params.put("strength", 1.25);
     }
 
     // ================================================================
@@ -50,7 +48,7 @@ public class Romra extends FighterData {
             super(
                     "Blade Arm",
                     TargetType.ONE_ENEMY,
-                    0.6
+                    0.65
             );
         }
 
@@ -78,15 +76,15 @@ public class Romra extends FighterData {
             super(
                     "Hero's Strike",
                     TargetType.ONE_ENEMY,
-                    0.8,
+                    0.95,
                     4
             );
         }
 
         @Override public String description(Fighter user) {
             return String.format(
-                    "Deal damage to a single enemy, dispelling %s, decreasing Attack for %s and inflicting unhealable for %s. Damage increases proportional to this fighter's current HP.",
-                    user.buffCount("dispelCount"), user.turnCount("attackDecreaseDur"), user.turnCount("unhealableDur")
+                    "Deal damage to a single enemy, dispelling %s and decreasing Attack and inflicting unhealable for %s. Damage increases proportional to this fighter's current HP.",
+                    user.buffCount("dispelCount"), user.turnCount("debuffDur")
             );
         }
 
@@ -95,8 +93,8 @@ public class Romra extends FighterData {
             user.dealDamage(user.skillDamage() + proportion(user.getHp(), user.getDouble("hpDmgBoost")))
                     .onHit(target -> {
                         target.dispelStatuses(StatusType.POSITIVE, 1);
-                        user.inflictStatus(Statuses.DECREASED_ATTACK, user.getInt("attackDecreaseDur"));
-                        user.inflictStatus(Statuses.UNHEALABLE, user.getInt("unhealableDur"));
+                        user.inflictStatus(Statuses.DECREASED_ATTACK, user.getInt("debuffDur"));
+                        user.inflictStatus(Statuses.UNHEALABLE, user.getInt("debuffDur"));
                     });
         }
     }
@@ -109,37 +107,37 @@ public class Romra extends FighterData {
                     "Shield of Static",
                     TargetType.ALL_ALLIES,
                     0,
-                    5,
+                    6,
                     2
             );
         }
 
         @Override public String description(Fighter user) {
             return String.format(
-                    "Greatly increase Defense and Attack of all allies for %s and grant a barrier for %s, before triggering a Dual Attack from the strongest ally on the strongest enemy.",
-                    user.turnCount("statBuffDur"), user.turnCount("barrierDur")
+                    "Increase Defense and Attack and grant a barrier to all allies for %s.",
+                    user.turnCount("statDur")
             );
         }
 
         @Override public String leDescription(Fighter user) {
-            return String.format("Extend buffs granted by %s.", user.turnCount("extendDur"));
+            return "Greatly increase Attack and Defense.";
         }
 
         @Override public void use(Fighter user) {
             user.forEachAlly(ally -> {
-                user.inflictStatus(ally, Statuses.GREATLY_INCREASED_DEFENSE,
-                        user.getInt("statBuffDur") + (user.isLeBoosted() ? user.getInt("extendDur") : 0));
-                user.inflictStatus(ally, Statuses.GREATLY_INCREASED_ATTACK,
-                        user.getInt("statBuffDur") + (user.isLeBoosted() ? user.getInt("extendDur") : 0));
+                user.inflictStatus(ally, user.isLeBoosted() ? Statuses.GREATLY_INCREASED_DEFENSE : Statuses.INCREASED_DEFENSE,
+                        user.getInt("statDur"));
+                user.inflictStatus(ally, user.isLeBoosted() ? Statuses.GREATLY_INCREASED_ATTACK : Statuses.INCREASED_ATTACK,
+                        user.getInt("statDur"));
                 user.inflictStatus(ally, Statuses.BARRIER,
-                        user.getInt("barrierDur") + (user.isLeBoosted() ? user.getInt("extendDur") : 0));
+                        user.getInt("statDur"), user.proportion(user.getDef(), "strength"));
             });
 
-            Optional<Fighter> strongestAlly = user.allies(false).stream().max(Fighter.atkSort);
-            strongestAlly.ifPresent(ally -> {
-                Optional<Fighter> strongestEnemy = user.enemies().stream().max(Fighter.atkSort);
-                strongestEnemy.ifPresent(ally::dualAttack);
-            });
+//            Optional<Fighter> strongestAlly = user.allies(false).stream().max(Fighter.atkSort);
+//            strongestAlly.ifPresent(ally -> {
+//                Optional<Fighter> strongestEnemy = user.enemies().stream().max(Fighter.atkSort);
+//                strongestEnemy.ifPresent(ally::dualAttack);
+//            });
         }
     }
 }

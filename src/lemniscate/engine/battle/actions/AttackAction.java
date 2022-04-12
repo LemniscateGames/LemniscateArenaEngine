@@ -32,4 +32,8 @@ public class AttackAction extends BattleAction {
     public void setDamage(int damage) {
         this.damage = damage;
     }
+
+    public Fighter getTarget(){
+        return getFighter();
+    }
 }

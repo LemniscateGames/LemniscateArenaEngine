@@ -5,7 +5,7 @@ import lemniscate.engine.battle.Status;
 import lemniscate.engine.data.SkillData;
 
 /** An instance of a fighter taking damage. **/
-public class StatusResult extends Result {
+public class StatusResult extends BattleResult {
     /** The attacker inflicting this status. **/
     private final Fighter inflicter;
     /** The target of this status infliction. **/

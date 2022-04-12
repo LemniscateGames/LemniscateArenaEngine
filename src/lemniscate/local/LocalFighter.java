@@ -1,5 +1,6 @@
 package lemniscate.local;
 
+import lemniscate.engine.Formulas;
 import lemniscate.engine.data.FighterSource;
 import lemniscate.engine.data.FighterData;
 
@@ -19,7 +20,7 @@ public class LocalFighter implements FighterSource {
     }
 
     public int statCurve(int stat){
-        return (int)(stat * Math.pow(1.05, level-20));
+        return Formulas.statCurve(stat, level);
     }
 
     @Override

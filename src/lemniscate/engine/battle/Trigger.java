@@ -14,4 +14,6 @@ public enum Trigger {
     BEFORE_ATTACKED,
     /** Trigger after this fighter is attacked. **/
     POST_ATTACKED,
+    /** Trigger when this fighter is defeated. **/
+    ON_DEFEAT
 }

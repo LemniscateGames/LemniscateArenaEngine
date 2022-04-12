@@ -1,5 +1,6 @@
 package lemniscate.engine.battle;
 
+import lemniscate.engine.battle.results.BattleResult;
 import lemniscate.engine.data.StatusData;
 
 /** A status instantiated on a Fighter. Stores an internal duration. **/
@@ -42,10 +43,18 @@ public class Status {
         }
     }
 
+    // Apply an action, that may be modified.
     public void apply(BattleAction action){
         if (data.actions.containsKey(action.getClass())){
 //            System.out.printf("(%s) PING! %s on %s%n", action, data.name, fighter);
-            data.actions.get(action.getClass()).apply(action);
+            data.actions.get(action.getClass()).accept(action);
+        }
+    }
+
+    // Accept a result, that cannot be modified.
+    public void accept(BattleResult result){
+        if (data.results.containsKey(result.getClass())){
+            data.results.get(result.getClass()).accept(result);
         }
     }
 

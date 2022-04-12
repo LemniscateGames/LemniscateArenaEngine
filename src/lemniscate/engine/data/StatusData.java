@@ -4,6 +4,7 @@ import lemniscate.engine.battle.Fighter;
 import lemniscate.engine.battle.Status;
 import lemniscate.engine.battle.Trigger;
 import lemniscate.engine.battle.BattleAction;
+import lemniscate.engine.battle.results.BattleResult;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,7 +26,9 @@ public abstract class StatusData {
     /** Map of effects to run when certain events occur. **/
     public final Map<Trigger, Consumer<Fighter>> effects;
     /** Map of effects to run on certain actions when they occur. **/
-    public final Map<Class<? extends BattleAction>, Function<BattleAction, BattleAction>> actions;
+    public final Map<Class<? extends BattleAction>, Consumer<BattleAction>> actions;
+    /** Map of effects to run on certain actions when they occur. **/
+    public final Map<Class<? extends BattleResult>, Consumer<BattleResult>> results;
 
     /** Whether this status effect uses duration or it lasts infinitely until cleared. **/
     private boolean usesDuration = true;
@@ -38,6 +41,7 @@ public abstract class StatusData {
 
         this.effects = new HashMap<>();
         this.actions = new HashMap<>();
+        this.results = new HashMap<>();
     }
 
     // On infliction & removal defaults, can be overridden if needed
@@ -53,8 +57,12 @@ public abstract class StatusData {
         effects.put(trigger, effect);
     }
 
-    public <T extends BattleAction> void addAction(Class<T> actionClass, Function<T, T> effect){
-        actions.put(actionClass, (Function<BattleAction, BattleAction>) effect);
+    public <T extends BattleAction> void addAction(Class<T> actionClass, Consumer<T> effect){
+        actions.put(actionClass, (Consumer<BattleAction>) effect);
+    }
+
+    public <T extends BattleResult> void addResult(Class<T> resultClass, Consumer<T> effect){
+        results.put(resultClass, (Consumer<BattleResult>) effect);
     }
 
     // Other

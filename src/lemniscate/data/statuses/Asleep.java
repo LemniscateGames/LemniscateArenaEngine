@@ -18,7 +18,6 @@ public class Asleep extends StatusData {
             turnAction.setActive(false);
             turnAction.fighter.getBattle().addMessage(String.format("%s is asleep...", turnAction.fighter));
             tickDuration(turnAction.fighter);
-            return turnAction;
         });
 
         addEffect(Trigger.POST_ATTACKED, (fighter) -> {

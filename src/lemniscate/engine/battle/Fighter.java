@@ -1,9 +1,11 @@
 package lemniscate.engine.battle;
 
+import lemniscate.engine.Formulas;
 import lemniscate.engine.Utils;
 import lemniscate.engine.battle.actions.AttackAction;
 import lemniscate.engine.battle.actions.StatusAction;
 import lemniscate.engine.battle.results.DamageResult;
+import lemniscate.engine.battle.results.BattleResult;
 import lemniscate.engine.battle.results.StatusResult;
 import lemniscate.engine.battle.results.TurnEventMessage;
 import lemniscate.engine.data.*;
@@ -171,12 +173,14 @@ public class Fighter {
         target.broadcast(action);
 
         if (action.isActive()){
-            action.getAttacker().takeDamage(action.getDamage());
-            DamageResult result = new DamageResult(this, action.getAttacker(), action.getDamage(), true);
+            // Target takes damage
+            int damageDealt = action.getTarget().takeDamage(action.getDamage());
+            DamageResult result = new DamageResult(action.getAttacker(), action.getTarget(), damageDealt, true);
+            broadcast(result);
             battle.addEvent(result);
             return result;
         } else {
-            return new DamageResult(this, action.getAttacker(), action.getDamage(), false);
+            return new DamageResult(action.getAttacker(), action.getTarget(), 0, false);
         }
     }
     public DamageResult dealDamage(int damage){
@@ -198,14 +202,19 @@ public class Fighter {
     /** Receive a source of damage and reduce HP/barrier strengths accordingly.
      * Not tied to the attacker that may have dealt this damage (it may have not been a fighter),
      * but this is where this fighter's defense is calculated to reduce damage. **/
-    public void takeDamage(int damage){
+    public int takeDamage(double attack){
+        int damage = Formulas.damage(attack, def);
+
         hp -= damage;
         if (hp <= 0) {
             hp = 0;
             onDeath();
         }
+
+        return damage;
     }
-    /** Same as taking damage but HP will not go below 1. **/
+
+    /** Same as taking damage but HP will not go below 1, and defense is not accounted for. **/
     public void loseHP(int amount){
         if (hp > 0){
             hp -= amount;
@@ -224,15 +233,28 @@ public class Fighter {
         if (hp > maxHp) hp = maxHp;
     }
 
-    // ======== DEATH
+    // ======== DEATH/REVIVAL
     /** Called when this fighter receives fatal damage. Usually dies unles they have the Revive buff or something. **/
     public void onDeath(){
+        // Invoke on_death, which will revive if the fighter is safeguarded, etc.
+        // (Safeguard will clear all other statuses within its invoked call)
+        invoke(Trigger.ON_DEFEAT);
+
+        // If fighter was revived, stop this method
+        if (isAlive()) return;
+
         // Check the battle to see if it is over
         battle.check();
 
         // Clear all statuses
         for (Status status : new ArrayList<>(statuses)){
             removeStatus(status);
+        }
+    }
+    /** Revive this fighter if they are dead and raise their HP to a certain percentage. **/
+    public void revive(double hpPercent){
+        if (!isAlive()){
+            hp = SkillData.proportion(maxHp, hpPercent);
         }
     }
 
@@ -253,8 +275,14 @@ public class Fighter {
             return new StatusResult(this, target, status, false);
         }
     }
+    public StatusResult inflictStatus(Fighter target, StatusData statusData, String durKey, int value){
+        return inflictStatus(target, statusData, getInt(durKey), value);
+    }
     public StatusResult inflictStatus(Fighter target, StatusData statusData, int duration){
         return inflictStatus(target, statusData, duration, 0);
+    }
+    public StatusResult inflictStatus(Fighter target, StatusData statusData, String durKey){
+        return inflictStatus(target, statusData, getInt(durKey), 0);
     }
     public StatusResult inflictStatus(StatusData statusData, int duration){
         return inflictStatus(target, statusData, duration);
@@ -272,6 +300,11 @@ public class Fighter {
     public void removeStatus(Status status){
         statuses.remove(status);
         status.onRemove(this);
+    }
+    public void removeAllStatuses(){
+        for (Status status : new ArrayList<>(statuses)){
+            removeStatus(status);
+        }
     }
 
     public void dispelStatuses(int statusType, int amount){
@@ -491,6 +524,14 @@ public class Fighter {
         }
     }
 
+    /** Broadcast a result. Results cannot be modified but they can pass information to statuses. **/
+    public void broadcast(BattleResult result){
+        for (Status status : new ArrayList<>(statuses)){
+            this.status = status;
+            status.accept(result);
+        }
+    }
+
     // ======== STATS
     /** SHould be called whenever this fighter's stats are updated.
      * Resets stats and recalculates all stat changes. **/
@@ -512,6 +553,10 @@ public class Fighter {
         if (chance(chance)) {
             effect.run();
         }
+    }
+
+    public double hpPercent(){
+        return (double)getHp() / getMaxHp();
     }
 
     // ======== COMPARATORS
