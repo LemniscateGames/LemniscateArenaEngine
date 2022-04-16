@@ -2,6 +2,7 @@ package lemniscate.engine.data;
 
 public interface FighterSource {
     FighterData getData();
+    int getRarity();
     int getLevel();
     int[] getSkillLevels();
     int getHp();

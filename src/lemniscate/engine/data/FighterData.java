@@ -39,8 +39,4 @@ public abstract class FighterData {
         this.description = description;
         this.skills = skills;
     }
-
-    /** Add all required parameters to the passed SkillParams objects
-     * for skills to reference on the Fighter this SkillParams object is instantiated in later. **/
-    public abstract void initializeParams(SkillParams params, int[] levels);
 }

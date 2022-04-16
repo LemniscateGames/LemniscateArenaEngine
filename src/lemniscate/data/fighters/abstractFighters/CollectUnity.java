@@ -28,14 +28,6 @@ public abstract class CollectUnity extends FighterData {
         );
     }
 
-    // -------- PARAMS
-    @Override public void initializeParams(SkillParams params, int[] levels) {
-        params.put("decrease", 0.1);
-        params.put("buffChance", 0.5);
-        params.put("buffDur", 2);
-        params.put("lePwrMult", 1.4);
-    }
-
     // ================================================================
     // -------- S1
     public static class SkillOne extends SkillData {
@@ -45,6 +37,11 @@ public abstract class CollectUnity extends FighterData {
                     TargetType.ONE_ENEMY,
                     1
             );
+        }
+
+        @Override
+        public void addParams(SkillParams params, int level) {
+            params.put("decrease", 0.08);
         }
 
         @Override public String description(Fighter user) {
@@ -71,6 +68,11 @@ public abstract class CollectUnity extends FighterData {
             );
         }
 
+        @Override
+        public void addParams(SkillParams params, int level) {
+
+        }
+
         @Override public String description(Fighter user) {
             return "Slash a single enemy, before triggering a Dual Attack from the strongest ally.";
         }
@@ -93,6 +95,13 @@ public abstract class CollectUnity extends FighterData {
                     5,
                     1
             );
+        }
+
+        @Override
+        public void addParams(SkillParams params, int level) {
+            params.put("buffChance", 0.5);
+            params.put("buffDur", 2);
+            params.put("lePwrMult", 1.4);
         }
 
         @Override public String description(Fighter user) {

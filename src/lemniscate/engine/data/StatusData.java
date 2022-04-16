@@ -67,7 +67,10 @@ public abstract class StatusData {
 
     // Other
     public void tickDuration(Fighter fighter){
-        fighter.getStatus().lowerDuration(1);
+        // If this status was not inflicted on the same turn, lower duration by 1.
+        if (fighter.getBattle().getTurn() != fighter.getStatus().turn){
+            fighter.getStatus().lowerDuration(1);
+        }
     }
 
     // Accessors

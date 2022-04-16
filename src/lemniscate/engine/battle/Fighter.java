@@ -4,10 +4,7 @@ import lemniscate.engine.Formulas;
 import lemniscate.engine.Utils;
 import lemniscate.engine.battle.actions.AttackAction;
 import lemniscate.engine.battle.actions.StatusAction;
-import lemniscate.engine.battle.results.DamageResult;
-import lemniscate.engine.battle.results.BattleResult;
-import lemniscate.engine.battle.results.StatusResult;
-import lemniscate.engine.battle.results.TurnEventMessage;
+import lemniscate.engine.battle.results.*;
 import lemniscate.engine.data.*;
 
 import java.util.*;
@@ -29,9 +26,6 @@ public class Fighter {
 
     /** List of skill objects of this fighter, setup on initialization. **/
     public final Skill[] skills;
-
-    /** The parameters for this fighter's skills that reflect values that may be based off the source's upgrades. **/
-    public final SkillParams params;
 
     // Mutable
     /** The percentage that this fighter is ready.
@@ -85,15 +79,14 @@ public class Fighter {
     public Fighter(FighterSource source) {
         this.source = source;
 
-        // Construct params, getting all required params from fighter data according to level
-        params = new SkillParams();
-        getData().initializeParams(params, source.getSkillLevels());
-
         // Construct a Skill array with skills instantiated as containers for this fighter data's skill data,
         // storing the cooldown of the skill for that fighter and other info.
         skills = new Skill[source.getData().skills.length];
         for (int i=0; i<skills.length; i++){
+            // Add a new Skill object with the correct skill data
             skills[i] = new Skill(source.getData().skills[i]);
+            // Initialize parameters on skill with skill level from source
+            skills[i].data.addParams(skills[i].params, source.getSkillLevels()[i]);
         }
 
         // Initialize battle name as data name in case it is retrieved before adding to battle
@@ -168,20 +161,24 @@ public class Fighter {
     }
 
     // ======== DAMAGE
-    public DamageResult dealDamage(Fighter target, int damage){
+    public DamageResult dealDamage(Fighter target, int damage, int element){
         AttackAction action = new AttackAction(target, this, damage);
         target.broadcast(action);
 
         if (action.isActive()){
             // Target takes damage
-            int damageDealt = action.getTarget().takeDamage(action.getDamage());
+            int damageDealt = action.getTarget().takeDamage(action.getDamage(), element);
             DamageResult result = new DamageResult(action.getAttacker(), action.getTarget(), damageDealt, true);
-            broadcast(result);
             battle.addEvent(result);
+            broadcast(result);
+            target.check();
             return result;
         } else {
             return new DamageResult(action.getAttacker(), action.getTarget(), 0, false);
         }
+    }
+    public DamageResult dealDamage(Fighter target, int damage){
+        return dealDamage(target, damage, getData().elementalType);
     }
     public DamageResult dealDamage(int damage){
         return dealDamage(target, damage);
@@ -202,23 +199,25 @@ public class Fighter {
     /** Receive a source of damage and reduce HP/barrier strengths accordingly.
      * Not tied to the attacker that may have dealt this damage (it may have not been a fighter),
      * but this is where this fighter's defense is calculated to reduce damage. **/
-    public int takeDamage(double attack){
-        int damage = Formulas.damage(attack, def);
+    public int takeDamage(double attack, int element){
 
+
+        int damage = Formulas.damage(attack, def, battle.rng);
         hp -= damage;
         if (hp <= 0) {
             hp = 0;
-            onDeath();
         }
-
         return damage;
     }
 
     /** Same as taking damage but HP will not go below 1, and defense is not accounted for. **/
     public void loseHP(int amount){
         if (hp > 0){
+            int initialHp = hp;
             hp -= amount;
             if (hp <= 0) hp = 1;
+            int hpLost = initialHp - hp;
+            addResult("loseHp", hpLost, String.format("%s lost %d HP", getBattleName(), hpLost));
         }
     }
 
@@ -229,11 +228,21 @@ public class Fighter {
 
     // ======== HEALING (aka what my mental state needs)
     public void heal(int amount){
+        int initialHp = hp;
         hp += amount;
         if (hp > maxHp) hp = maxHp;
+        int hpHealed = hp - initialHp;
+        addResult("heal", hpHealed, String.format("%s recovered %d HP", getBattleName(), hpHealed));
     }
 
     // ======== DEATH/REVIVAL
+    /** Call after damageResult is added to check if this fighter is dead. **/
+    public void check(){
+        if (hp <= 0){
+            onDeath();
+        }
+    }
+
     /** Called when this fighter receives fatal damage. Usually dies unles they have the Revive buff or something. **/
     public void onDeath(){
         // Invoke on_death, which will revive if the fighter is safeguarded, etc.
@@ -248,13 +257,16 @@ public class Fighter {
 
         // Clear all statuses
         for (Status status : new ArrayList<>(statuses)){
-            removeStatus(status);
+            removeStatus(status, StatusRemovalResult.RemovalCause.SILENT);
         }
+
+        addResult("defeat", 0, String.format("%s was defeated", getBattleName()));
     }
     /** Revive this fighter if they are dead and raise their HP to a certain percentage. **/
     public void revive(double hpPercent){
         if (!isAlive()){
             hp = SkillData.proportion(maxHp, hpPercent);
+            addResult("revive", 0, String.format("%s was revived", getBattleName()));
         }
     }
 
@@ -297,16 +309,25 @@ public class Fighter {
     }
 
     /** Remove a passed Status object from this fighter. **/
-    public void removeStatus(Status status){
+    public void removeStatus(Status status, StatusRemovalResult.RemovalCause removalCause){
         statuses.remove(status);
         status.onRemove(this);
+
+        StatusRemovalResult result = new StatusRemovalResult(this, status, removalCause, true);
+        battle.addEvent(result);
     }
-    public void removeAllStatuses(){
+//    public void removeStatus(Status status){
+//        removeStatus(status, StatusRemovalResult.RemovalCause.DISPELLED);
+//    }
+
+    public void removeAllStatuses(StatusRemovalResult.RemovalCause removalCause){
         for (Status status : new ArrayList<>(statuses)){
-            removeStatus(status);
+            removeStatus(status, removalCause);
         }
     }
-
+    public void dispelStatus(Status status){
+        removeStatus(status, StatusRemovalResult.RemovalCause.DISPELLED);
+    }
     public void dispelStatuses(int statusType, int amount){
         // Find all statuses that can be dispelled by this
         ArrayList<Status> dispellableStatuses = new ArrayList<>();
@@ -320,11 +341,7 @@ public class Fighter {
         for (int i=0; i<amount; i++){
             if (dispellableStatuses.size() == 0) break;
             Status status = dispellableStatuses.get(battle.rng.nextInt(dispellableStatuses.size()));
-            removeStatus(status);
-            battle.addEvent(new TurnEventMessage(
-                    String.format("Dispelled %s from %s",
-                            status, this)
-            ));
+            dispelStatus(status);
         }
     }
 
@@ -458,9 +475,12 @@ public class Fighter {
     }
 
     private void changeReadiness(double amount){
+        double initialReadiness = readiness;
         readiness += amount;
         if (readiness > 1) readiness = 1;
         if (readiness < 0) readiness = 0;
+        double change = readiness - initialReadiness;
+        battle.addEvent(new ReadinessChangeResult(this, change));
     }
     public void increaseReadiness(double amount){
         changeReadiness(amount);
@@ -559,6 +579,10 @@ public class Fighter {
         return (double)getHp() / getMaxHp();
     }
 
+    public void addResult(String id, int value, String message){
+        battle.addGeneralResult(id, this, value, message);
+    }
+
     // ======== COMPARATORS
     /** Compare fighters in order of HP. **/
     public static final Comparator<Fighter> hpSort = Comparator.comparingInt(a -> a.hp);
@@ -578,22 +602,22 @@ public class Fighter {
 
     // ======== PARAMETERS
     public int getInt(String key){
-        if (!params.ints.containsKey(key)) try {
+        if (!skill.params.ints.containsKey(key)) try {
             throw new ParameterDNEException(this, key);
         } catch (ParameterDNEException e) {
             e.printStackTrace();
             return 0;
         }
-        return params.ints.get(key);
+        return skill.params.ints.get(key);
     }
     public double getDouble(String key){
-        if (!params.doubles.containsKey(key)) try {
+        if (!skill.params.doubles.containsKey(key)) try {
             throw new ParameterDNEException(this, key);
         } catch (ParameterDNEException e) {
             e.printStackTrace();
             return 0;
         }
-        return params.doubles.get(key);
+        return skill.params.doubles.get(key);
     }
 
     public String turnCount(String key){

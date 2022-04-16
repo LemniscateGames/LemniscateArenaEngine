@@ -24,20 +24,6 @@ public class AmbulanceGuy extends FighterData {
         );
     }
 
-    // -------- PARAMS
-    @Override public void initializeParams(SkillParams params, int[] levels) {
-        // -- S1
-        params.put("dmgHpLose", 0.125);
-        params.put("dur", 2);
-        params.put("hpStrength", 0.15);
-        // -- S2
-        params.put("dbDur", 3);
-        params.put("hpThreshold", 0.5);
-        params.put("buffDur", 2);
-        // -- S3
-        params.put("dur3", 1);
-    }
-
     // ================================================================
     // -------- S1
     public static class SkillOne extends SkillData {
@@ -49,6 +35,13 @@ public class AmbulanceGuy extends FighterData {
                     0,
                     1
             );
+        }
+
+        @Override
+        public void addParams(SkillParams params, int level) {
+            params.put("dmgHpLose", 0.125);
+            params.put("dur", 2);
+            params.put("hpStrength", 0.15);
         }
 
         @Override public String description(Fighter user) {
@@ -84,9 +77,16 @@ public class AmbulanceGuy extends FighterData {
             super(
                     "Healing Gun",
                     TargetType.ONE_ALLY,
-                    0.15,
+                    0.125,
                     4
             );
+        }
+
+        @Override
+        public void addParams(SkillParams params, int level) {
+            params.put("dbDur", 3);
+            params.put("hpThreshold", 0.5);
+            params.put("buffDur", 2);
         }
 
         @Override public String description(Fighter user) {
@@ -119,17 +119,22 @@ public class AmbulanceGuy extends FighterData {
             );
         }
 
+        @Override
+        public void addParams(SkillParams params, int level) {
+            params.put("dur", 1);
+        }
+
         @Override public String description(Fighter user) {
             return String.format(
                     "Harnessing the power of the gods above, grant all allies immunity and safeguard for %s.",
-                    user.turnCount("dur3")
+                    user.turnCount("dur")
             );
         }
 
         @Override public void use(Fighter user) {
             user.forEachAlly(ally -> {
-                user.inflictStatus(ally, Statuses.IMMUNITY, "dur3");
-                user.inflictStatus(ally, Statuses.SAFEGUARD, "dur3");
+                user.inflictStatus(ally, Statuses.IMMUNITY, "dur");
+                user.inflictStatus(ally, Statuses.SAFEGUARD, "dur");
             });
         }
     }

@@ -20,27 +20,10 @@ public class Xuirbo extends FighterData {
                 4,
                 ElementalType.THUNDER,
                 FighterClass.ROGUE,
-                3280, 780, 425, 650,
+                3080, 730, 400, 600,
                 "A businessman in the form of a small spherical knight.",
                 new SkillOne(), new SkillTwo(), new SkillThree()
         );
-    }
-
-    // -------- PARAMS
-    @Override public void initializeParams(SkillParams params, int[] levels) {
-        // -- S1
-        params.put("decrease", 0.25);
-        // -- S2
-        params.put("hpLoseAmt", 0.075);
-        params.put("burnDur", 1);
-        params.put("buffDur", 2);
-        params.put("leBuffTurns", 1);
-        // -- S3
-        params.put("spdDmg", 0.4);
-        params.put("hpHpLoseAmt", 0.05);
-        params.put("hpDmgLoseAmt", 0.10);
-        params.put("stunChance", 0.6);
-        params.put("stunDur", 1);
     }
 
     // ================================================================
@@ -52,6 +35,11 @@ public class Xuirbo extends FighterData {
                     TargetType.ONE_ENEMY,
                     1
             );
+        }
+
+        @Override
+        public void addParams(SkillParams params, int level) {
+            params.put("decrease", 0.25);
         }
 
         @Override public String description(Fighter user) {
@@ -77,11 +65,20 @@ public class Xuirbo extends FighterData {
             super(
                     "Cigar",
                     TargetType.SELF,
-                    1,
+                    0,
                     4,
                     1
             );
         }
+
+        @Override
+        public void addParams(SkillParams params, int level) {
+            params.put("hpLoseAmt", 0.125);
+            params.put("burnDur", 1);
+            params.put("buffDur", 2);
+            params.put("leBuffTurns", 1);
+        }
+
         @Override public String description(Fighter user) {
             return String.format(
                     "Lose HP proportional to max HP and become burned for %s. Greatly increase Speed and Critical Damage for %s.",
@@ -115,6 +112,15 @@ public class Xuirbo extends FighterData {
                     0.9,
                     5
             );
+        }
+
+        @Override
+        public void addParams(SkillParams params, int level) {
+            params.put("spdDmg", 0.4);
+            params.put("hpHpLoseAmt", 0.075);
+            params.put("hpDmgLoseAmt", 0.15);
+            params.put("stunChance", 0.6);
+            params.put("stunDur", 1);
         }
 
         @Override public String description(Fighter user) {

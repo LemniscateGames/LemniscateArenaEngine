@@ -22,16 +22,6 @@ public class TemplateFighter extends FighterData {
         );
     }
 
-    // -------- PARAMS
-    @Override public void initializeParams(SkillParams params, int[] levels) {
-        // -- S1
-
-        // -- S2
-
-        // -- S3
-
-    }
-
     // ================================================================
     // -------- S1
     public static class SkillOne extends SkillData {
@@ -41,6 +31,11 @@ public class TemplateFighter extends FighterData {
                     TargetType.ONE_ENEMY,
                     1
             );
+        }
+
+        @Override
+        public void addParams(SkillParams params, int level) {
+
         }
 
         @Override public String description(Fighter user) {
@@ -67,6 +62,11 @@ public class TemplateFighter extends FighterData {
             );
         }
 
+        @Override
+        public void addParams(SkillParams params, int level) {
+
+        }
+
         @Override public String description(Fighter user) {
             return String.format(
                     "",
@@ -90,6 +90,11 @@ public class TemplateFighter extends FighterData {
                     5,
                     1
             );
+        }
+
+        @Override
+        public void addParams(SkillParams params, int level) {
+
         }
 
         @Override public String description(Fighter user) {

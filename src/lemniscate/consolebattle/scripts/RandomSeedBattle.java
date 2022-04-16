@@ -3,6 +3,7 @@ package lemniscate.consolebattle.scripts;
 import lemniscate.consolebattle.ConsoleBattle;
 import lemniscate.consolebattle.SeededBattleGenerator;
 import lemniscate.data.ai.RandomChoiceAI;
+import lemniscate.engine.battle.Battle;
 
 import java.util.Random;
 
@@ -11,9 +12,8 @@ public class RandomSeedBattle {
         Random rng = new Random();
         long seed = rng.nextLong();
 
-        ConsoleBattle.playBattleInConsole(
-                SeededBattleGenerator.generateBattle(seed),
-                new RandomChoiceAI(seed)
-        );
+        Battle battle = SeededBattleGenerator.generateBattle(seed);
+        ConsoleBattle.displayBattle(battle);
+        ConsoleBattle.playBattleInConsole(battle, new RandomChoiceAI(seed));
     }
 }

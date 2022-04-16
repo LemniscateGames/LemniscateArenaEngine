@@ -1,6 +1,7 @@
 package lemniscate.engine.battle;
 
 import lemniscate.engine.battle.results.BattleResult;
+import lemniscate.engine.battle.results.StatusRemovalResult;
 import lemniscate.engine.data.StatusData;
 
 /** A status instantiated on a Fighter. Stores an internal duration. **/
@@ -18,6 +19,10 @@ public class Status {
     /** The fighter that inflicted this status. **/
     public final Fighter inflicter;
 
+    /** The turn that this status was inflicted on. When a fighter inflicts a status on themselves,
+     * do not tick down the duration if within the same turn, so this is where it is checked. **/
+    public final BattleTurn turn;
+
     // Constructors
     public Status(StatusData data, Fighter fighter, Fighter inflicter, int duration, int value) {
         this.data = data;
@@ -25,6 +30,7 @@ public class Status {
         this.inflicter = inflicter;
         this.duration = duration;
         this.value = value;
+        this.turn = fighter.getBattle().getTurn();
     }
 
     // Info
@@ -33,8 +39,8 @@ public class Status {
     }
 
     // Interaction
-    public void remove(){
-        fighter.removeStatus(this);
+    public void remove(StatusRemovalResult.RemovalCause removalCause){
+        fighter.removeStatus(this, removalCause);
     }
 
     public void invoke(Fighter fighter, Trigger trigger){
@@ -60,7 +66,7 @@ public class Status {
 
     public void lowerDuration(int dur){
         duration -= dur;
-        if (duration <= 0) this.remove();
+        if (duration <= 0) this.remove(StatusRemovalResult.RemovalCause.EXPIRED);
     }
 
     public void onInflict(Fighter fighter){

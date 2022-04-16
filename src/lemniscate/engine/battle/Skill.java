@@ -1,6 +1,7 @@
 package lemniscate.engine.battle;
 
 import lemniscate.engine.data.SkillData;
+import lemniscate.engine.data.SkillParams;
 
 import java.util.List;
 
@@ -8,12 +9,15 @@ import java.util.List;
 public class Skill {
     /** The base data for this skill this is an instance of. **/
     public final SkillData data;
+    /** Parameters for this skill, based on the fighter's level. **/
+    public final SkillParams params;
     /** Turns until usable again. **/
     private int currentCooldown;
 
     // Constructors
     public Skill(SkillData data) {
         this.data = data;
+        this.params = new SkillParams();
     }
 
     /** If this skill is usable by the given fighter. **/

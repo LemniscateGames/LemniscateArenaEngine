@@ -39,6 +39,9 @@ public abstract class SkillData {
     public abstract String description(Fighter user);
     /** Description for the LE boost of this skill. **/
     public String leDescription(Fighter user){ return ""; }
+    /** Initialize all required parameters to the passed SkillParams object
+     * for this skill to reference on the Fighter this SkillParams object is instantiated in later. **/
+    public abstract void addParams(SkillParams params, int level);
 
     /** Effect to run when a fighter uses this skill. **/
     public abstract void use(Fighter user);

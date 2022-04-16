@@ -1,6 +1,7 @@
 package lemniscate.engine.battle;
 
 import lemniscate.engine.battle.actions.TurnAction;
+import lemniscate.engine.battle.results.GeneralResult;
 import lemniscate.engine.battle.results.TurnEventMessage;
 
 import java.util.*;
@@ -20,7 +21,7 @@ public class Battle {
     /** A list of all actions taken by fighters during battle. **/
     public final ArrayList<BattleTurn> history;
 
-    /** The turn currently happening. TurnEvents across the code are tracked into here. **/
+    /** The turn currently running. TurnEvents across the code are tracked into here. **/
     private BattleTurn turn;
 
     /** The next fighter to act. **/
@@ -243,10 +244,15 @@ public class Battle {
 
     /** Add an event to the current turn. **/
     public void addEvent(TurnEvent event){
+        event.storeMessage();
         turn.addEvent(event);
     }
     public void addMessage(String message){
-        turn.addEvent(new TurnEventMessage(message));
+        addEvent(new TurnEventMessage(message));
+    }
+
+    public void addGeneralResult(String id, Fighter fighter, int value, String message){
+        addEvent(new GeneralResult(id, fighter, value, message));
     }
 
     // ======== ACCESSORS

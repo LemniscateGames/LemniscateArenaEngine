@@ -30,7 +30,6 @@ public class ConsoleBattle {
 //                System.out.println("request: "+request);
                 response = battle.submitTurn(request);
 //                System.out.println("response: "+response);
-
             }
             thiccDivider();
             displayTurn(response.turn);
@@ -38,9 +37,11 @@ public class ConsoleBattle {
 
         displayBattle(battle);
         System.out.println("battle complete - total turns taken: "+battle.history.size());
-        System.out.printf("winning team: %d - %s%n",
-                battle.getWinningTeam().getControllerId(),
-                battle.getWinningTeam().getFighters());
+        if (battle.getWinningTeam() != null){
+            System.out.printf("winning team: %d - %s%n",
+                    battle.getWinningTeam().getControllerId(),
+                    battle.getWinningTeam().getFighters());
+        }
     }
     public static void playBattleInConsole(Battle battle){
         playBattleInConsole(battle, new RandomChoiceAI());
@@ -205,7 +206,7 @@ public class ConsoleBattle {
 //            return;
 //        }
         for (TurnEvent event : turn.getEvents()){
-            System.out.println(event.toString());
+            System.out.println(event.getMessage());
         }
     }
 }

@@ -3,6 +3,7 @@ package lemniscate.data.statuses;
 import lemniscate.engine.StatusType;
 import lemniscate.engine.battle.Trigger;
 import lemniscate.engine.battle.results.DamageResult;
+import lemniscate.engine.battle.results.StatusRemovalResult;
 import lemniscate.engine.data.SkillData;
 import lemniscate.engine.data.StatusData;
 
@@ -16,7 +17,7 @@ public class Safeguard extends StatusData {
         );
 
         addEffect(Trigger.ON_DEFEAT, fighter -> {
-            fighter.removeAllStatuses();
+            fighter.removeAllStatuses(StatusRemovalResult.RemovalCause.SILENT);
             fighter.revive(.25);
         });
     }

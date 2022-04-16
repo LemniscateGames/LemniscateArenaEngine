@@ -9,10 +9,17 @@ import java.util.Random;
 /** Represents the database fighter entity, but it is local instead. **/
 public class LocalFighter implements FighterSource {
     private final FighterData data;
-    private int level;
+    private final int rarity;
+    private final int level;
 
+    public LocalFighter(FighterData data, int rarity, int level) {
+        this.data = data;
+        this.rarity = rarity;
+        this.level = level;
+    }
     public LocalFighter(FighterData data, int level) {
         this.data = data;
+        this.rarity = data.rarity;
         this.level = level;
     }
     public LocalFighter(FighterData data, int levelLow, int levelHigh, Random rng){
@@ -20,7 +27,12 @@ public class LocalFighter implements FighterSource {
     }
 
     public int statCurve(int stat){
-        return Formulas.statCurve(stat, level);
+        return Formulas.statCurve(stat, rarity, level);
+    }
+
+    @Override
+    public int getRarity() {
+        return rarity;
     }
 
     @Override

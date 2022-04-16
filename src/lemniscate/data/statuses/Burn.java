@@ -1,5 +1,6 @@
 package lemniscate.data.statuses;
 
+import lemniscate.engine.battle.Status;
 import lemniscate.engine.battle.Trigger;
 import lemniscate.engine.data.StatusData;
 import lemniscate.engine.StatusType;
@@ -9,13 +10,13 @@ public class Burn extends StatusData {
         super(
                 "Burn",
                 StatusType.NEGATIVE,
-                "Take damage proportional to inflicter's ATK each turn."
+                "Lose HP proportional to inflicter's ATK each turn."
         );
 
         addEffect(Trigger.TURN_START, (fighter) -> {
-            fighter.takeDamage(
-                    (int)(fighter.getStatus().inflicter.getAtk() * 0.3)
-            );
+            Status burn = fighter.getStatus();
+
+            fighter.loseHP((int)(fighter.getStatus().inflicter.getAtk() * 0.3));
 
             tickDuration(fighter);
         });

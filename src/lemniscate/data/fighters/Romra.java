@@ -20,25 +20,10 @@ public class Romra extends FighterData {
                 3,
                 ElementalType.WIND,
                 FighterClass.KNIGHT,
-                4800, 425, 750, 325,
+                4700, 405, 730, 325,
                 "A newly certified knight in the Territory of Static Army who wishes to one day join the Elemental Offense Squad.",
                 new BladeArm(), new HerosStrike(), new ShieldOfStatic()
         );
-    }
-
-    // -------- PARAMS
-    @Override public void initializeParams(SkillParams params, int[] levels) {
-        // -- S1
-        params.put("chance", 0.35);
-        params.put("dur", 2);
-        params.put("defDmgBoost", 0.35);
-        // -- S2
-        params.put("dispelCount", 1);
-        params.put("debuffDur", 2);
-        params.put("hpDmgBoost", 0.09);
-        // -- S3
-        params.put("statDur", 1);
-        params.put("strength", 1.25);
     }
 
     // ================================================================
@@ -50,6 +35,13 @@ public class Romra extends FighterData {
                     TargetType.ONE_ENEMY,
                     0.65
             );
+        }
+
+        @Override
+        public void addParams(SkillParams params, int level) {
+            params.put("chance", 0.35);
+            params.put("dur", 2);
+            params.put("defDmgBoost", 0.35);
         }
 
         @Override public String description(Fighter user) {
@@ -81,6 +73,13 @@ public class Romra extends FighterData {
             );
         }
 
+        @Override
+        public void addParams(SkillParams params, int level) {
+            params.put("dispelCount", 1);
+            params.put("debuffDur", 2);
+            params.put("hpDmgBoost", 0.09);
+        }
+
         @Override public String description(Fighter user) {
             return String.format(
                     "Deal damage to a single enemy, dispelling %s and decreasing Attack and inflicting unhealable for %s. Damage increases proportional to this fighter's current HP.",
@@ -110,6 +109,12 @@ public class Romra extends FighterData {
                     6,
                     2
             );
+        }
+
+        @Override
+        public void addParams(SkillParams params, int level) {
+            params.put("statDur", 1);
+            params.put("strength", 1.25);
         }
 
         @Override public String description(Fighter user) {

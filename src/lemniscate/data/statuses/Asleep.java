@@ -3,6 +3,7 @@ package lemniscate.data.statuses;
 import lemniscate.engine.StatusType;
 import lemniscate.engine.battle.Trigger;
 import lemniscate.engine.battle.actions.TurnAction;
+import lemniscate.engine.battle.results.StatusRemovalResult;
 import lemniscate.engine.data.StatusData;
 
 public class Asleep extends StatusData {
@@ -22,7 +23,8 @@ public class Asleep extends StatusData {
 
         addEffect(Trigger.POST_ATTACKED, (fighter) -> {
             // Remove this asleep status when attacked.
-            fighter.getStatus().remove();
+            fighter.getStatus().remove(StatusRemovalResult.RemovalCause.SILENT);
+            fighter.addResult("awoken", 0, String.format("%s woke up!", fighter));
         });
     }
 }
