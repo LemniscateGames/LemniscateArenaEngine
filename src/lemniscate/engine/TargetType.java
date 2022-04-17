@@ -7,10 +7,10 @@ import java.util.Arrays;
 import java.util.List;
 
 public enum TargetType {
-    NONE,
     SELF,
     ONE_ENEMY, ALL_ENEMIES, RANDOM_ENEMY, ONE_ENEMY_PLUS_RANDOM,
-    ONE_ALLY, ALL_ALLIES;
+    ONE_ALLY, ALL_ALLIES,
+    ONE_FIGHTER, ALL_FIGHTERS;
 
     public List<Fighter> getPossibleTargets(Fighter fighter){
         switch(this){
@@ -20,6 +20,8 @@ public enum TargetType {
                 return fighter.enemies(true);
             case ONE_ALLY: case ALL_ALLIES:
                 return fighter.allies(true, true);
+            case ONE_FIGHTER: case ALL_FIGHTERS:
+                return fighter.getBattle().allFighters();
             default:
                 return new ArrayList<>();
         }
@@ -27,12 +29,14 @@ public enum TargetType {
 
     public List<Fighter> getTargets(Fighter fighter){
         switch(this){
-            case SELF: case ONE_ENEMY: case ONE_ALLY:
+            case SELF: case ONE_ENEMY: case ONE_ALLY: case ONE_FIGHTER:
                 return fighterList(fighter.getTarget());
             case ALL_ENEMIES:
                 return fighter.enemies();
             case ALL_ALLIES:
                 return fighter.allies();
+            case ALL_FIGHTERS:
+                return fighter.getBattle().allFighters();
             case RANDOM_ENEMY:
                 return fighterList(Utils.randomChoice(fighter.getBattle().rng, fighter.enemies()));
             case ONE_ENEMY_PLUS_RANDOM:

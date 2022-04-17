@@ -16,6 +16,7 @@ public class Stun extends StatusData {
             // Fighter is stunned; cannot act.
             turnAction.setActive(false);
             turnAction.fighter.getBattle().addMessage(String.format("%s is stunned!", turnAction.fighter));
+            // Tick when losing a turn rather than when the turn ends.
             tickDuration(turnAction.fighter);
         });
     }

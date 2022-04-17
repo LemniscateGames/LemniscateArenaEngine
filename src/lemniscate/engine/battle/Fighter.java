@@ -1,6 +1,7 @@
 package lemniscate.engine.battle;
 
 import lemniscate.engine.Formulas;
+import lemniscate.engine.StatusType;
 import lemniscate.engine.Utils;
 import lemniscate.engine.battle.actions.AttackAction;
 import lemniscate.engine.battle.actions.StatusAction;
@@ -129,6 +130,13 @@ public class Fighter {
         forEachAlly(effect, true);
     }
 
+    public Fighter randomAlly(){
+        return randomChoice(allies());
+    }
+    public Fighter randomEnemy(){
+        return randomChoice(enemies());
+    }
+
     /** Returns a list of all fighters that are not on this fighter's team.
      *
      * @param onlyAlive whether to only return living enemies
@@ -221,6 +229,11 @@ public class Fighter {
         }
     }
 
+    /** Comical method to instantly die **/
+    public void die(){
+        loseHP(hp);
+    }
+
     /** The base damage this fighter will deal when using the current skill. **/
     public int skillDamage(){
         return (int)(skill.data.power * atk * (dualAttacking ? source.getDualAttackPower() : 1));
@@ -270,13 +283,34 @@ public class Fighter {
         }
     }
 
+    // ======== RESISTANCE
+    /** Make an RNG check to determine if an effect is resisted or not by the target passed to this method. **/
+    public boolean checkResist(Object effectToResist){
+        boolean resisted = chance(source.getResistance());
+        if (resisted){
+            battle.addEvent(new ResistResult(this, effectToResist));
+        }
+        return resisted;
+    }
+
     // ======== STATUSES
-    public StatusResult inflictStatus(Fighter target, StatusData statusData, int duration, int value){
+    public StatusResult inflictStatus(Fighter target, StatusData statusData, int duration, int value, boolean ignoreResistance){
         Status status = new Status(statusData, target, this, duration, value);
 
         StatusAction action = new StatusAction(target, this, status);
         target.broadcast(action);
 
+        // Check for resistance under these conditions:
+        if (
+                action.isActive() // action is still active
+                && !ignoreResistance // ignoreResistance flag is not present
+                && action.getStatus().isNegative() // status is a negative effect
+                && target.checkResist(action.getStatus()) // <-- here is the actual resistance RNG call check
+        ){
+            action.setActive(false);
+        }
+
+        // Check if still active, after both broadcasting action and resistance check, and if so add the status
         if (action.isActive()){
             target.addStatus(status);
             status.onInflict(target);
@@ -287,8 +321,20 @@ public class Fighter {
             return new StatusResult(this, target, status, false);
         }
     }
+    public StatusResult inflictStatus(Fighter target, StatusData statusData, String durKey, int value, boolean ignoreResistance){
+        return inflictStatus(target, statusData, getInt(durKey), value, ignoreResistance);
+    }
+    public StatusResult inflictStatus(Fighter target, StatusData statusData, int duration, int value){
+        return inflictStatus(target, statusData, duration, value, false);
+    }
     public StatusResult inflictStatus(Fighter target, StatusData statusData, String durKey, int value){
-        return inflictStatus(target, statusData, getInt(durKey), value);
+        return inflictStatus(target, statusData, getInt(durKey), value, false);
+    }
+    public StatusResult inflictStatus(Fighter target, StatusData statusData, int duration, boolean ignoreResistance){
+        return inflictStatus(target, statusData, duration, 0, ignoreResistance);
+    }
+    public StatusResult inflictStatus(Fighter target, StatusData statusData, String durKey, boolean ignoreResistance){
+        return inflictStatus(target, statusData, getInt(durKey), 0, ignoreResistance);
     }
     public StatusResult inflictStatus(Fighter target, StatusData statusData, int duration){
         return inflictStatus(target, statusData, duration, 0);
@@ -309,12 +355,14 @@ public class Fighter {
     }
 
     /** Remove a passed Status object from this fighter. **/
-    public void removeStatus(Status status, StatusRemovalResult.RemovalCause removalCause){
+    public StatusRemovalResult removeStatus(Status status, StatusRemovalResult.RemovalCause removalCause){
         statuses.remove(status);
         status.onRemove(this);
 
         StatusRemovalResult result = new StatusRemovalResult(this, status, removalCause, true);
-        battle.addEvent(result);
+        if (removalCause != StatusRemovalResult.RemovalCause.SILENT) battle.addEvent(result);
+
+        return result;
     }
 //    public void removeStatus(Status status){
 //        removeStatus(status, StatusRemovalResult.RemovalCause.DISPELLED);
@@ -325,8 +373,14 @@ public class Fighter {
             removeStatus(status, removalCause);
         }
     }
-    public void dispelStatus(Status status){
-        removeStatus(status, StatusRemovalResult.RemovalCause.DISPELLED);
+
+    /** Attempt to remove a status from this fighter. Can be resisted. **/
+    public StatusRemovalResult dispelStatus(Status status){
+        if (status.isNegative() && !checkResist("Dispelling of "+status)){
+            return removeStatus(status, StatusRemovalResult.RemovalCause.DISPELLED);
+        } else {
+            return new StatusRemovalResult(this, status, StatusRemovalResult.RemovalCause.DISPELLED, false);
+        }
     }
     public void dispelStatuses(int statusType, int amount){
         // Find all statuses that can be dispelled by this
@@ -433,6 +487,21 @@ public class Fighter {
         return Arrays.stream(skills).filter(skill -> skill.isUsable(this)).collect(Collectors.toList());
     }
 
+    /** Lower the cooldown of a certain skill index. **/
+    public void lowerCooldown(int index, int amount){
+        skills[index].lowerCooldown(amount);
+    }
+    public void lowerCooldown(int index, String key){
+        lowerCooldown(index, getInt(key));
+    }
+
+    public Skill getSkill(int index){
+        return skills[index];
+    }
+    public String getSkillName(int index){
+        return getSkill(index).getName();
+    }
+
     // ======== TARGETS
     public List<Fighter> getPossibleTargets() {
         return skill.data.targetType.getPossibleTargets(this);
@@ -485,11 +554,23 @@ public class Fighter {
     public void increaseReadiness(double amount){
         changeReadiness(amount);
     }
+    public void increaseReadiness(String key){
+        changeReadiness(getDouble(key));
+    }
+    public void increaseReadiness() {
+        changeReadiness(getDouble("increase"));
+    }
+
     public void decreaseReadiness(double amount){
-        changeReadiness(-amount);
+        if (!checkResist("Readiness decrease")){
+            changeReadiness(-amount);
+        };
     }
     public void decreaseReadiness(String key){
         decreaseReadiness(getDouble(key));
+    }
+    public void decreaseReadiness() {
+        decreaseReadiness(getDouble("decrease"));
     }
 
     // ======== LE
@@ -569,10 +650,17 @@ public class Fighter {
 
     // ======== MISC
     /** Make an RNG call and if passed, run the effect. **/
-    public void ifChance(double chance, Runnable effect){
+    public void chance(double chance, Runnable effect){
         if (chance(chance)) {
             effect.run();
         }
+    }
+
+    public <T> T randomChoice(T[] items){
+        return battle.randomChoice(items);
+    }
+    public <T> T randomChoice(List<T> items){
+        return battle.randomChoice(items);
     }
 
     public double hpPercent(){
@@ -623,6 +711,9 @@ public class Fighter {
     public String turnCount(String key){
         return SkillData.turnCount(getInt(key));
     }
+    public String turnCount(){
+        return turnCount("duration");
+    }
 
     public String percent(String key){
         return SkillData.percent(getDouble(key));
@@ -632,11 +723,19 @@ public class Fighter {
         return SkillData.verbal(getInt(key));
     }
 
+    public String adverbal(String key){
+        return SkillData.adverbal(getInt(key));
+    }
+
     public String buffCount(String key){
         return SkillData.buffCount(getInt(key));
     }
     public String debuffCount(String key){
         return SkillData.debuffCount(getInt(key));
+    }
+
+    public void repeat(String key, Runnable effect){
+        SkillData.repeat(getInt(key), effect);
     }
 
     // ======== Accessors but not standard field accessors whatever those should be called
@@ -649,13 +748,31 @@ public class Fighter {
         return targets;
     }
 
+    /** Have a random chance to pass true or false based on the percentage passed. **/
     public boolean chance(double p){
-        return battle.chance(p);
+        return battle.ifChance(p);
     }
+    /** Have a random chance to pass true or false based on the double from the parameter key passed. **/
     public boolean chance(String key){
         return chance(getDouble(key));
     }
-    public int proportion(double stat, String portionKey){
+    /** Have a chance equal to the current skill's 'chance' parameter to pass true, otherwise false. **/
+    public boolean chance(){
+        return chance("chance");
+    }
+
+    public void ifChance(double p, Runnable effect){
+        if (chance(p)) effect.run();
+    }
+    public void ifChance(String key, Runnable effect){
+        if (chance(key)) effect.run();
+    }
+    public void ifChance(Runnable effect){
+        if (chance()) effect.run();
+    }
+
+    /** Return a certain percentage from the passed stat as an int. **/
+    public int proportion(int stat, String portionKey){
         return SkillData.proportion(stat, getDouble(portionKey));
     }
 

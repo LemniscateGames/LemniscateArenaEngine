@@ -18,14 +18,20 @@ public abstract class SkillData {
     public final int cooldown;
     /** Cost in LE to LE-boost this move. **/
     public final int leBoostCost;
+    /** If set to true, this move will start with full cooldown instead of 0 when the battle begins. **/
+    public final boolean beginWithCooldown;
 
     // Constructors
-    public SkillData(String name, TargetType targetType, double power, int cooldown, int leBoostCost) {
+    public SkillData(String name, TargetType targetType, double power, int cooldown, int leBoostCost, boolean beginWithCooldown) {
         this.name = name;
         this.targetType = targetType;
         this.power = power;
         this.cooldown = cooldown;
         this.leBoostCost = leBoostCost;
+        this.beginWithCooldown = beginWithCooldown;
+    }
+    public SkillData(String name, TargetType targetType, double power, int cooldown, int leBoostCost){
+        this(name, targetType, power, cooldown, leBoostCost, false);
     }
     public SkillData(String name, TargetType targetType, double power, int cooldown) {
         this(name, targetType, power, cooldown, 0);
@@ -54,10 +60,16 @@ public abstract class SkillData {
         }
     }
 
+    public static void repeat(int amount, Runnable effect){
+        for (int i=0; i<amount; i++){
+            effect.run();
+        }
+    }
+
     // Damage
     /** Returns a percentage of the damage dealt with this move's power scaled by the passed portion.
      * Used primarily for increasing damage/another value proportionally by a stat. **/
-    public static int proportion(double stat, double portion){
+    public static int proportion(int stat, double portion){
         return (int)(stat * portion);
     }
     /** Returns a percentage of the damage dealt with the passed power scaled by the passed portion.
@@ -81,10 +93,22 @@ public abstract class SkillData {
             case 2: return "two";
             case 3: return "three";
             case 4: return "four";
+            case 5: return "five";
             default: return "zero";
         }
     }
 
+    /** i dont care that adverbal probably is'nt a word **/
+    public static String adverbal(int num){
+        switch(num){
+            case 1: return "once";
+            case 2: return "twice";
+            case 3: return "thrice";
+            case 4: return "four times";
+            case 5: return "five times";
+            default: return "zero times";
+        }
+    }
 
     public static String buffCount(int count){
         return verbal(count) + (count == 1 ? " buff" : " buffs");

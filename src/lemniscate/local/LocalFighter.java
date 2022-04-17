@@ -87,7 +87,7 @@ public class LocalFighter implements FighterSource {
 
     @Override
     public double getResistance() {
-        return 0.0;
+        return 0.3;
     }
 
     @Override

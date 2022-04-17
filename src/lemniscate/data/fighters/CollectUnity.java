@@ -1,4 +1,4 @@
-package lemniscate.data.fighters.abstractFighters;
+package lemniscate.data.fighters;
 
 import lemniscate.data.Statuses;
 import lemniscate.engine.ElementalType;
@@ -118,8 +118,8 @@ public abstract class CollectUnity extends FighterData {
         @Override public void use(Fighter user) {
             user.forEachTarget(target -> user.dealDamage(target, user.isLeBoosted() ? power*user.getDouble("lePwrMult") : power));
             user.forEachAlly(ally -> {
-                user.ifChance(user.getDouble("buffChance"), () -> user.inflictStatus(ally, Statuses.INCREASED_ATTACK, user.getInt("buffDur")));
-                user.ifChance(user.getDouble("buffChance"), () -> user.inflictStatus(ally, Statuses.INCREASED_DEFENSE, user.getInt("buffDur")));
+                user.chance(user.getDouble("buffChance"), () -> user.inflictStatus(ally, Statuses.INCREASED_ATTACK, user.getInt("buffDur")));
+                user.chance(user.getDouble("buffChance"), () -> user.inflictStatus(ally, Statuses.INCREASED_DEFENSE, user.getInt("buffDur")));
             });
         }
     }

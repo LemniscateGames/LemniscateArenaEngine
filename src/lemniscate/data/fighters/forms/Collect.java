@@ -1,6 +1,6 @@
-package lemniscate.data.fighters;
+package lemniscate.data.fighters.forms;
 
-import lemniscate.data.fighters.abstractFighters.CollectUnity;
+import lemniscate.data.fighters.CollectUnity;
 
 public class Collect extends CollectUnity {
     public Collect() {

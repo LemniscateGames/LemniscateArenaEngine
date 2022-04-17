@@ -1,5 +1,7 @@
 package lemniscate.engine.battle;
 
+import lemniscate.engine.Utils;
+import lemniscate.engine.battle.actions.ActAction;
 import lemniscate.engine.battle.actions.TurnAction;
 import lemniscate.engine.battle.results.GeneralResult;
 import lemniscate.engine.battle.results.TurnEventMessage;
@@ -187,18 +189,25 @@ public class Battle {
                         nextActor.getBattleName()));
 
         // Check that the actor can use the skill.
-        if (!request.skill.isUsable(nextActor)) return new TurnResponse(
+        if (!request.getSkill().isUsable(nextActor)) return new TurnResponse(
                 String.format("%s cannot use %s right now",
-                        nextActor.getBattleName(), request.skill.getName()));
+                        nextActor.getBattleName(), request.getSkill().getName()));
+
+
 
         // Check that the target that the player selected can be targeted by the skill.
-        if (!request.skill.data.targetType.getPossibleTargets(nextActor).contains(request.target)) return new TurnResponse(
+        if (!request.getSkill().data.targetType
+                .getPossibleTargets(nextActor)
+                .contains(request.getTarget())
+        ) return new TurnResponse(
                 String.format("%s cannot target %s with %s",
-                        nextActor.getBattleName(), request.target.getBattleName(), request.skill.getName()));
+                        nextActor.getBattleName(),
+                        request.getTarget().getBattleName(),
+                        request.getSkill().getName()));
 
         // LE is stored as one int value = one tenth LE, but the skill LE costs are stored as actual LE cost,
         // so that's why it's multiplied by 10 here
-        if (request.leBoosted && nextActor.getTeam().getLe() < request.skill.data.leBoostCost*10) return new TurnResponse(
+        if (request.isLeBoosted() && nextActor.getTeam().getLe() < request.getSkill().data.leBoostCost*10) return new TurnResponse(
                 "Not enough LE to LE-boost");
 
         // --> If the code reaches here, the request is valid <--
@@ -209,8 +218,11 @@ public class Battle {
         thisTurn.setValues(request);
         Fighter actor = nextActor;
 
+        // Broadcast the actAction which may change the target selected or other shits
+        actor.broadcast(new ActAction(actor, request));
+
         // Use the skill
-        actor.use(request.skill, request.target, request.leBoosted);
+        actor.use(request.getSkill(), request.getTarget(), request.isLeBoosted());
 
         // INVOKE: turn end
         actor.invoke(Trigger.TURN_END);
@@ -221,8 +233,8 @@ public class Battle {
 
         // Return a response, with a brief description of the turn because why not
         return new TurnResponse(true, String.format("%s used %s on %s%s",
-                actor.getBattleName(), request.skill.getName(), actor.getTargets(),
-                request.leBoosted ? " (LE-boosted!)" : ""),
+                actor.getBattleName(), request.getSkill().getName(), actor.getTargets(),
+                request.isLeBoosted() ? " (LE-boosted!)" : ""),
                 thisTurn);
     }
 
@@ -238,8 +250,15 @@ public class Battle {
      * @param p the chance percentage to return true, from 0.0 to 1.0
      * @return true if rng passed, false if rng failed
      */
-    public boolean chance(double p){
+    public boolean ifChance(double p){
         return rng.nextDouble() < p;
+    }
+
+    public <T> T randomChoice(T[] items){
+        return Utils.randomChoice(rng, items);
+    }
+    public <T> T randomChoice(List<T> items){
+        return Utils.randomChoice(rng, items);
     }
 
     /** Add an event to the current turn. **/

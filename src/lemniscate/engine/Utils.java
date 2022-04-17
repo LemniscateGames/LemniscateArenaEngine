@@ -18,6 +18,7 @@ public class Utils {
     }
 
     public static <T> T randomChoice(Random rng, List<T> list){
+        if (list.size() == 0) return null;
         return list.get(rng.nextInt(list.size()));
     }
 

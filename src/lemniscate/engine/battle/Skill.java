@@ -18,6 +18,10 @@ public class Skill {
     public Skill(SkillData data) {
         this.data = data;
         this.params = new SkillParams();
+
+        if (data.beginWithCooldown){
+            resetCooldown();
+        }
     }
 
     /** If this skill is usable by the given fighter. **/
@@ -28,6 +32,17 @@ public class Skill {
     /** Reset this skill's cooldown to the internal skill's base cooldown. **/
     public void resetCooldown() {
         this.currentCooldown = data.cooldown;
+    }
+
+    /** Lower the cooldown of this skill. **/
+    public void lowerCooldown(int amount){
+        this.currentCooldown -= amount;
+        if (currentCooldown < 0) currentCooldown = 0;
+    }
+
+    /** Raise the cooldown of this skill. **/
+    public void raiseCooldown(int amount){
+        this.currentCooldown += amount;
     }
 
     /** Get total LE cost in tenths as ints (ex. a 1 LE move will return 10 from this) **/

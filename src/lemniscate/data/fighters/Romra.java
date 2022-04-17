@@ -10,8 +10,6 @@ import lemniscate.engine.data.SkillData;
 import lemniscate.engine.StatusType;
 import lemniscate.engine.data.SkillParams;
 
-import java.util.Optional;
-
 public class Romra extends FighterData {
     public Romra() {
         super(

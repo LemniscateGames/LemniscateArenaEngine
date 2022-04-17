@@ -32,10 +32,10 @@ public class BattleTurn {
         this.acted = acted;
     }
     public void setValues(TurnRequest request, boolean acted){
-        setValues(request.actor, request.skill, request.target, request.leBoosted, acted);
+        setValues(request.actor, request.getSkill(), request.getTarget(), request.isLeBoosted(), acted);
     }
     public void setValues(TurnRequest request){
-        setValues(request.actor, request.skill, request.target, request.leBoosted, true);
+        setValues(request.actor, request.getSkill(), request.getTarget(), request.isLeBoosted(), true);
     }
 
     public void addEvent(TurnEvent event){

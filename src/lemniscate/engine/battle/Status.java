@@ -1,5 +1,6 @@
 package lemniscate.engine.battle;
 
+import lemniscate.engine.StatusType;
 import lemniscate.engine.battle.results.BattleResult;
 import lemniscate.engine.battle.results.StatusRemovalResult;
 import lemniscate.engine.data.StatusData;
@@ -75,6 +76,15 @@ public class Status {
     public void onRemove(Fighter fighter){
         data.onInflict(fighter, this);
     }
+
+    // Info
+    public boolean isPositive(){
+        return data.type == StatusType.POSITIVE;
+    }
+    public boolean isNegative(){
+        return data.type == StatusType.NEGATIVE;
+    }
+
 
     // Accessors
     public int getDuration() {

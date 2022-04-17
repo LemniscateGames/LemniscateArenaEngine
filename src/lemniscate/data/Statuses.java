@@ -14,6 +14,7 @@ public class Statuses {
     // DEBUFFS
             ASLEEP = new Asleep(),
             BURN = new Burn(),
+            CONFUSION = new Confusion(),
             DAMAGE_BLESSING = new DamageBlessing(),
             IMMUNITY = new Immunity(),
             SAFEGUARD = new Safeguard(),
